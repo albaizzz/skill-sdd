@@ -1,4 +1,4 @@
-# SDD Agent — Specification-Driven Development Skill
+# SDD SKILL — Specification-Driven Development Skill
 
 Skill untuk **AI coding agent** (opencode, Claude Code, Codex, GitHub Copilot) yang menerapkan **Specification-Driven Development (SDD)**: *tidak ada kode yang menyentuh codebase sebelum sebuah spesifikasi teknis ditulis, direview, dan disetujui.*
 

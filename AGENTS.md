@@ -8,32 +8,41 @@ This project follows **SDD: no code touches the codebase until a technical speci
 
 ### Lifecycle
 ```
-Foundation Gate → Requirements → 13-Point Spec → Review → Human Approval → Task Breakdown → Implementation → Verification → Done
+Foundation Gate → Human-Authored 13-Point Spec → AI Validation → Human Approval
+→ Human-Authored Task Plan → AI Validation → Human Approval
+→ AI Implementation → Verification → Done
 ```
 
-1. **Foundation Gate** — `PRD.md`, `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`, `AGENTS.md` must exist with substantive content (also checked in `docs/`). Missing → create them by interviewing the developer, one at a time, ≤3 rounds per file, mark unknowns `assumed — verify`. Templates live in the SDD skill folder (see Reference).
-2. **Requirements** — collect feature description, affected area (optional), priority P0/P1/P2, existing draft (optional). If vague, ask ≤3 clarifying questions, then proceed with assumptions.
-3. **13-Point Spec** — write `docs/specs/<ticket-id>.md`. Points:
-   1 Business Requirement, 2 Goals, 3 Out of Scope, 4 Constraints, 5 Definition of Done, 6 Technical Solution, 6a Security & Compliance, 6b Decision Record, 7 Database Impact, 8 Code Impact (with `file:line`), 9 Testing & Regression, 10 Backward Compatibility & Rollback, 11 Deployment & Migration.
-4. **Review (devil's advocate)** — grade every point `Pass / Fail / Insufficient`, ≤3 Socratic rounds, reject → gap report (point, what's missing, the question).
-5. **Human Approval** — **the human, not the agent, approves.** AI advises.
-6. **Task Breakdown** — write `docs/tasks/<ticket-id>.md`: ordered atomic tasks, dependencies, target files, per-task Definition of Done. Get developer sign-off before coding.
-7. **Implementation** — execute tasks one at a time in dependency order. No silent deviation.
+1. **Foundation Gate** — `PRD.md`, `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`, `AGENTS.md` must exist with substantive content (also checked in `docs/`). Missing → create them by interviewing the developer, one at a time, ≤3 rounds per file, mark unknowns `assumed — verify`.
+2. **Specification authoring** — the developer or product owner writes `docs/specs/<ticket-id>.md` using the 13-point structure. AI may interview, validate completeness, and report gaps; it must not write or modify the human-authored 13 points.
+3. **AI Agent Advisor** — AI may add a separate, clearly labeled appendix outside the 13 points. It must not rewrite or silently alter the human-authored specification.
+4. **Review and approval** — AI reports gaps and risks; a human approves the spec. AI never self-approves.
+5. **Task plan authoring** — a human writes `docs/tasks/<ticket-id>.md`, with ordered tasks, dependencies, target files, and per-task Definition of Done.
+6. **Task validation and approval** — AI checks the human-authored task plan against the approved spec and reports mismatches. A human approves the plan before implementation.
+7. **Implementation** — AI executes approved tasks one at a time in dependency order. No silent deviation.
 8. **Verification** — run spec DoD + tests; report pass/fail per item. Never declare Done with failures.
 
+The 13 specification points are:
+   1 Business Requirement, 2 Goals, 3 Out of Scope, 4 Constraints, 5 Definition of Done, 6 Technical Solution, 6a Security & Compliance, 6b Decision Record, 7 Database Impact, 8 Code Impact (with `file:line`), 9 Testing & Regression, 10 Backward Compatibility & Rollback, 11 Deployment & Migration.
+
 ### Hard Rules
-- Never implement without an approved spec. Never self-approve.
+- The human authors the 13-point spec and task plan. AI validates and advises without changing either; the only AI-authored spec content permitted is a separate, clearly labeled `AI Agent Advisor` appendix outside the 13 points.
+- Never implement without a human-approved spec and task plan. Never self-approve.
 - Every codebase claim cites `file:line`. Unverified → `assumed — verify`. Never invent symbols or filenames.
 - Spec lifecycle: `Draft → In Review → Approved → Task Breakdown → In Implementation → Deployed → Done`.
 
 ## Reference
-- Full workflow + interview question sets: the SDD skill at `.opencode/skills/sdd/SKILL.md` (or `.claude/skills/sdd/SKILL.md`).
+- Foundation workflow: `skills/foundation-gate/SKILL.md`.
+- Human-authored spec workflow: `skills/sdd-specify/SKILL.md`.
+- Task workflow: `sdd-task` (planned; skill location and behavior are `assumed — verify` until added).
 - Process detail + one-shot example: `specs.md`.
 - Templates: `.opencode/skills/sdd/templates/` — `PRD.md`, `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`, `AGENTS.md`, `SPEC.md`, `TASKS.md`.
 
 ## Coding SOP
-_Filled in by interview when the foundation gate runs. Until then, this file carries only the SDD process rules above._
-- Tech stack & versions: `<fill>`
-- Build/lint/test/typecheck commands: `<fill>`
-- Code style: `<fill>`
-- Git workflow: `<fill>`
+- Tech stack & versions: Markdown skills/templates, Bash installers, JSON manifests; no application framework or package manager.
+- Project structure: `skills/<name>/` is the Copilot CLI skill tree; `.claude/skills/` and `.opencode/skills/` contain platform-specific skills; keep mirrored skill content consistent.
+- Code style: Follow the existing Markdown structure and skill frontmatter. Bash scripts use `set -euo pipefail` and quote variable expansions.
+- Build/lint/typecheck: Not configured.
+- Validation: `bash -n install.sh install-foundation.sh`; inspect Markdown and plugin manifests for structural consistency.
+- Git workflow: Branch naming and commit format are `assumed — verify`; human review/approval is required before merging workflow changes.
+- Do-not rules: No secrets in source; no feature implementation before both spec and task-plan approval; do not let AI edit human-authored spec or task-plan content.

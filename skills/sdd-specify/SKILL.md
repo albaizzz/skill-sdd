@@ -1,5 +1,5 @@
 ---
-name: sdd
+name: sdd-specify
 description: >
   Specification-Driven Development (SDD). Use when starting a new feature/task, gathering
   requirements, drafting/reviewing a technical specification, or when the project may be missing
@@ -9,7 +9,7 @@ description: >
   an approved spec.
 ---
 
-# SKILL: sdd (Specification-Driven Development)
+# SKILL: sdd-specify (Specification-Driven Development)
 
 ## Core Purpose
 Drive every feature through the SDD lifecycle: **no implementation touches the codebase until a technical specification has been written, reviewed, and approved.** This skill gates work behind a project foundation, produces a 13-point spec, reviews it with a devil's-advocate mindset, and only implements after human approval.
