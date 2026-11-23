@@ -33,14 +33,15 @@ The 13 specification points are:
 
 ## Reference
 - Foundation workflow: `skills/foundation-gate/SKILL.md`.
+- Workflow router: `skills/sdd/SKILL.md`.
 - Human-authored spec workflow: `skills/sdd-specify/SKILL.md`.
-- Task workflow: `sdd-task` (planned; skill location and behavior are `assumed — verify` until added).
+- Task workflow: `skills/sdd-task/SKILL.md`.
 - Process detail + one-shot example: `specs.md`.
-- Templates: `.opencode/skills/sdd/templates/` — `PRD.md`, `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`, `AGENTS.md`, `SPEC.md`, `TASKS.md`.
+- Templates: `skills/foundation-gate/templates/`, `skills/sdd-specify/templates/`, and `skills/sdd-task/templates/`.
 
 ## Coding SOP
 - Tech stack & versions: Markdown skills/templates, Bash installers, JSON manifests; no application framework or package manager.
-- Project structure: `skills/<name>/` is the Copilot CLI skill tree; `.claude/skills/` and `.opencode/skills/` contain platform-specific skills; keep mirrored skill content consistent.
+- Project structure: `skills/<name>/` is the canonical plugin skill tree; `.agents/skills/`, `.claude/skills/`, and `.opencode/skills/` are native install targets.
 - Code style: Follow the existing Markdown structure and skill frontmatter. Bash scripts use `set -euo pipefail` and quote variable expansions.
 - Build/lint/typecheck: Not configured.
 - Validation: `bash -n install.sh install-foundation.sh`; inspect Markdown and plugin manifests for structural consistency.

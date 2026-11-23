@@ -2,8 +2,7 @@
 set -euo pipefail
 
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SKILL_DIR="$SRC_DIR/.opencode/skills/sdd"
-CLAUDE_SKILL_DIR="$SRC_DIR/.claude/skills/sdd"
+SKILLS_DIR="$SRC_DIR/skills"
 SPEC_FILE="$SRC_DIR/specs.md"
 AGENTS_FILE="$SRC_DIR/AGENTS.md"
 CLAUDE_FILE="$SRC_DIR/CLAUDE.md"
@@ -11,9 +10,8 @@ COPILOT_FILE="$SRC_DIR/.github/copilot-instructions.md"
 
 usage() {
   echo "Usage: $0 <target-repo-path>"
-  echo "Installs the SDD skill (opencode + Claude Code) and SDD entry-point docs"
-  echo "(AGENTS.md, CLAUDE.md, .github/copilot-instructions.md) into a target repo,"
-  echo "so the workflow works across opencode, Claude Code, Codex, and GitHub Copilot."
+  echo "Installs SDD skills into native project skill paths for OpenCode, Codex,"
+  echo "GitHub Copilot, and Claude Code, plus their instruction entry points."
   echo
   echo "Example:"
   echo "  $0 /path/to/office/service-repo"
@@ -27,8 +25,8 @@ if [ ! -d "$TARGET" ]; then
   echo "ERROR: target '$TARGET' is not a directory" >&2
   exit 1
 fi
-if [ ! -d "$SKILL_DIR" ]; then
-  echo "ERROR: skill folder not found at '$SKILL_DIR'" >&2
+if [ ! -d "$SKILLS_DIR" ]; then
+  echo "ERROR: skills folder not found at '$SKILLS_DIR'" >&2
   exit 1
 fi
 
@@ -51,40 +49,48 @@ install_or_append() {
   fi
 }
 
+install_skills() {
+  local relative_dir="$1"
+  local skill_src skill_name destination
+  mkdir -p "$TARGET/$relative_dir"
+  for skill_src in "$SKILLS_DIR"/*; do
+    [ -d "$skill_src" ] || continue
+    skill_name="${skill_src##*/}"
+    destination="$TARGET/$relative_dir/$skill_name"
+    mkdir -p "$destination"
+    cp -R "$skill_src/." "$destination/"
+    echo "    $skill_name -> $relative_dir/$skill_name/"
+  done
+}
+
 echo "==> Installing SDD workflow into '$TARGET'"
 
-# 1. opencode skill
-mkdir -p "$TARGET/.opencode/skills"
-cp -r "$SKILL_DIR" "$TARGET/.opencode/skills/sdd"
-echo "    corelib  -> .opencode/skills/sdd/"
+# Native skill paths:
+# .agents/skills is shared by Codex and GitHub Copilot.
+# OpenCode and Claude Code also load their platform-specific directories.
+install_skills ".agents/skills"
+install_skills ".opencode/skills"
+install_skills ".claude/skills"
 
-# 2. Claude Code skill
-mkdir -p "$TARGET/.claude/skills"
-cp -r "$CLAUDE_SKILL_DIR" "$TARGET/.claude/skills/sdd"
-echo "    corelib  -> .claude/skills/sdd/"
-
-# 3. specs.md
+# Shared instructions and platform entry points.
 install_or_append "$SPEC_FILE" "$TARGET/specs.md" "Specification-Driven Development"
 
-# 4. AGENTS.md (Codex, Copilot, opencode read this)
-# NOTE: AGENTS.md is also a foundation doc. We seed it with SDD rules + empty Coding SOP
-# placeholders; the skill's interview fills the Coding SOP during the foundation gate.
+# AGENTS.md is read by Codex, GitHub Copilot, and OpenCode.
 install_or_append "$AGENTS_FILE" "$TARGET/AGENTS.md" "Specification-Driven Development"
 
-# 5. CLAUDE.md (Claude Code)
+# Claude Code entry point.
 install_or_append "$CLAUDE_FILE" "$TARGET/CLAUDE.md" "Claude Code"
 
-# 6. Copilot instructions
+# GitHub Copilot repository instructions.
 mkdir -p "$TARGET/.github"
 install_or_append "$COPILOT_FILE" "$TARGET/.github/copilot-instructions.md" "Copilot Instructions"
 
 echo
 echo "Done."
-echo "- Skills: .opencode/skills/sdd/ + .claude/skills/sdd/"
+echo "- Skills: .agents/skills/, .opencode/skills/, .claude/skills/"
 echo "- Docs:   specs.md, AGENTS.md, CLAUDE.md, .github/copilot-instructions.md"
 echo
 echo "Next:"
-echo "1. Restart opencode / Claude Code in the target repo to load the skill."
-echo "2. Run the foundation gate (the skill will interview you and fill the Coding SOP"
-echo "   in AGENTS.md, plus create PRD/DESIGN_SYSTEM/ARCHITECTURE if missing)."
-echo "3. Existing AGENTS.md/CLAUDE.md WITHOUT SDD rules were overwritten - review the diff."
+echo "1. Start or reload your agent so it discovers the installed skills."
+echo "2. Run foundation-gate, then sdd-specify, then sdd-task."
+echo "3. Review any existing AGENTS.md/CLAUDE.md kept by the installer for stale SDD instructions."

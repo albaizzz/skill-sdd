@@ -11,7 +11,7 @@ description: >
 # SKILL: foundation-gate
 
 ## Core Purpose
-Make sure every project has the four foundation documents before any feature work begins. These documents give every AI agent the project context it needs. This skill runs once per project. It does not write feature requirements or specs. Those belong to `spec-writer` and `sdd`.
+Make sure every project has the four foundation documents before any feature work begins. These documents give every AI agent the project context it needs. This skill runs once per project. It does not write feature requirements or specs. Human authors specifications with `sdd-specify` and task plans with `sdd-task`.
 
 ## Required Files
 The target project must contain 4 markdown files with **substantive content**:
@@ -40,7 +40,7 @@ AGENTS.md         ❌ missing
 A file counts as present only if it has substantive content. An empty file or a stub with only headers does not count.
 
 ## Step 2 — Gate Decision
-- **All 4 present → PASS.** Say so and stop. Feature work may start with `spec-writer`.
+- **All 4 present → PASS.** Say so and stop. Feature work may start with `sdd-specify`.
 - **Any missing or empty → BLOCK.** Say: *"Feature requirements gathering is blocked. Foundation docs incomplete."* Go to Step 3.
 
 ## Step 3 — Create Missing Foundation Docs (one at a time)
@@ -99,9 +99,9 @@ For a new project, all 4 files are missing. Interview once per file, in order. P
 ## Rules
 - **Never skip the gate.** Check the 4 files first, even if the developer says "just gather requirements".
 - **Never create foundation docs without interviewing.** Empty templates with placeholder text do not pass the gate.
-- **Never write feature specs here.** Hand off to `spec-writer`.
+- **Never write feature specs here.** Hand off to `sdd-specify`.
 - **Keep the SDD rules section in `AGENTS.md`.** It is what makes the gate machine-readable for every agent.
 
 ## Reference
-- Feature workflow: `sdd` skill
-- Feature spec drafting: `spec-writer` skill
+- Feature specification: `sdd-specify` skill
+- Human-authored task plan validation: `sdd-task` skill

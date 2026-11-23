@@ -2,14 +2,14 @@
 # Installer SDD tanpa clone repo. Unduh arsip dari GitHub, lalu jalankan install-foundation.sh.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/albaizzz/sdd-agent/main/install.sh | bash -s -- /path/to/repo
+#   curl -fsSL https://raw.githubusercontent.com/albaizzz/sdd-skill/main/install.sh | bash -s -- /path/to/repo
 #
 # Env opsional:
-#   SDD_REPO  owner/repo  (default: albaizzz/sdd-agent)
+#   SDD_REPO  owner/repo  (default: albaizzz/sdd-skill)
 #   SDD_REF   nama branch (default: main)
 set -euo pipefail
 
-REPO="${SDD_REPO:-albaizzz/sdd-agent}"
+REPO="${SDD_REPO:-albaizzz/sdd-skill}"
 REF="${SDD_REF:-main}"
 TARGET="${1:-$PWD}"
 

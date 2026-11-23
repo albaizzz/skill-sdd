@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "sdd-agent",
-  "description": "Specification-Driven Development skills for AI coding agents.",
+  "name": "sdd-skill",
+  "description": "Human-authored Specification-Driven Development skills for AI coding agents.",
   "owner": {
     "name": "albaizzz",
     "url": "https://github.com/albaizzz"
@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "sdd",
-      "description": "No code before an approved spec: foundation gate, 13-point spec, review, task breakdown, verification.",
+      "description": "Human-authored 13-point specs and task plans, validated by AI before approved task execution.",
       "source": "./",
       "category": "productivity"
     }

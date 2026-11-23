@@ -30,8 +30,12 @@ Target repository Figma design ── Figma MCP ── AI coding agent
 ```text
 .
 ├── skills/
-│   ├── foundation-gate/       # Copilot CLI foundation skill and templates
-│   └── sdd-specify/           # Copilot CLI 13-point specification skill and templates
+│   ├── foundation-gate/       # Project context gate
+│   ├── sdd/                   # Workflow router
+│   ├── sdd-specify/           # Human-authored 13-point spec validation
+│   ├── sdd-task/              # Human-authored task-plan validation
+│   └── spec-writer/           # Legacy alias for sdd-specify
+├── .agents/skills/            # Codex and GitHub Copilot skill path
 ├── .claude/skills/            # Claude Code skills
 ├── .opencode/skills/          # OpenCode skills
 ├── .claude-plugin/            # Claude plugin and marketplace manifests
@@ -44,7 +48,7 @@ Target repository Figma design ── Figma MCP ── AI coding agent
 └── ARCHITECTURE.md
 ```
 
-`sdd-task` is part of the intended workflow described in `PRD.md`; its skill location is `assumed — verify` until it is added to the repository.
+`sdd-task` is packaged at `skills/sdd-task/SKILL.md` with its task-plan template under `skills/sdd-task/templates/`.
 
 ## 3. Request Lifecycle (Data Flow)
 
@@ -66,7 +70,7 @@ Target repository Figma design ── Figma MCP ── AI coding agent
 | Figma MCP | Expose target-project design references for frontend work | MCP connection provided by the user's environment | AI coding agent |
 | Target repository | Stores foundation docs, human-authored specs, task plans, and implementation | Version-controlled files | Human contributors and AI agents |
 
-The `sdd-task` skill is a planned workflow component; its implementation and exact platform locations are `assumed — verify`.
+`sdd-task` is distributed from `skills/sdd-task/` alongside the other canonical skills.
 
 ## 5. Data Layer
 

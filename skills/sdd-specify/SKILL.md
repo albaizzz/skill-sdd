@@ -1,18 +1,15 @@
 ---
 name: sdd-specify
 description: >
-  Specification-Driven Development (SDD). Use when starting a new feature/task, gathering
-  requirements, drafting/reviewing a technical specification, or when the project may be missing
-  its foundation documents (PRD, DESIGN_SYSTEM, ARCHITECTURE, AGENTS). Enforces the full SDD loop:
-  foundation gate → requirements → 13-point spec → strict review → human approval → task breakdown
-  → implementation → verification against Definition of Done. No code touches the codebase before
-  an approved spec.
+  Guides developers and product owners to author a complete 13-point feature specification.
+  The AI asks questions and validates the human-authored spec but never writes or edits its 13 points.
+  Use for specification authoring and review after foundation-gate passes.
 ---
 
-# SKILL: sdd-specify (Specification-Driven Development)
+# SKILL: sdd-specify
 
 ## Core Purpose
-Drive every feature through the SDD lifecycle: **no implementation touches the codebase until a technical specification has been written, reviewed, and approved.** This skill gates work behind a project foundation, produces a 13-point spec, reviews it with a devil's-advocate mindset, and only implements after human approval.
+Help developers and product owners author precise, testable feature specifications. **The human owns and writes the 13-point spec.** The AI guides the author, checks completeness, reports gaps, and may add only a separate `AI Agent Advisor` appendix. This skill does not approve specs, author task plans, or implement code.
 
 ## Trigger Keywords
 - PRD, DESIGN_SYSTEM, ARCHITECTURE, AGENTS, SDD, specification-driven development
@@ -34,10 +31,10 @@ The developer supplies:
 3. **Priority** — P0/P1/P2 and any deadline.
 4. **Existing Draft Spec (optional)** — a prior draft the agent should critique rather than start from scratch.
 
-If the description is too vague to start, ask up to **3 targeted clarifying questions**, then proceed with clearly-marked assumptions. Never block on the absence of a draft — produce one.
+If the description is too vague to start, ask up to **3 targeted clarifying questions**. Report unresolved items as suggested `assumed — verify` markers; the human decides whether to add them to the spec.
 
 ## PHASE 2 — Draft the 13-Point Spec
-Create `docs/specs/<ticket-id>.md` from the 13-point structure below (template in `templates/SPEC.md`). Write it in the agent's own words, citing the codebase:
+Guide the human to create `docs/specs/<ticket-id>.md` using `templates/SPEC.md`. The human fills and edits all 13 points. The AI may show a blank scaffold if asked, but must not populate, paraphrase, rewrite, or otherwise modify the human-authored sections.
 
 1. **Business Requirement** — context and why this feature is built.
 2. **Goals** — success metrics / expected outcomes.
@@ -54,39 +51,24 @@ Create `docs/specs/<ticket-id>.md` from the 13-point structure below (template i
 11. **Deployment & Migration Strategy** — feature toggles, release sequence, canary/ramp %, data seeding; **observability signals** validating a healthy deployment.
 
 ## PHASE 3 — Spec Review (Phase A: Devil's Advocate)
-- **Do not rewrite the spec directly.** Ask critical questions (Socratic method) to force the developer to close gaps. Example: *"You modified function X, called by Service Y. How do you handle backward compatibility for Y?"*
+- Read the spec without editing it. Ask critical questions (Socratic method) so the human can close gaps. Example: *"You modified function X, called by Service Y. How do you handle backward compatibility for Y?"*
 - **Focus on legacy risks:** N+1 queries, DB migration downtime, expanding blast radius, hidden callers.
 - **Iteration cap:** max **3 Socratic rounds**. After that, stop asking and provide fillable hints/placeholders so the draft can progress.
 - **Grade every point** `Pass / Fail / Insufficient`.
+- Report the review in chat. The human updates the spec. The AI must not apply the gap report to the file.
 - **Approved** only when: all 13 points **Pass**, no **Open Risk** flagged, AND the human approver confirms.
 - **Rejected** specs return a gap report: point number, what is missing, the question the developer must answer.
 
-## PHASE 4 — Human Approval Gate
-- **AI advises, humans decide.** The agent never unilaterally approves or blocks. The human approver (tech lead/reviewer) has final authority.
-- If the agent rejects or approves incorrectly, the developer may **appeal** with a written rationale; a human reviews and overrides.
+## PHASE 4 — AI Agent Advisor Appendix
+- Keep the 13-point spec human-authored and unchanged.
+- Only when asked, append a separate `## AI Agent Advisor` section after the spec's existing content. Do not edit, reformat, or remove any preceding text.
+- Label every item as an AI recommendation, include its rationale, and distinguish suggestions from accepted requirements.
+- The human decides whether to incorporate a recommendation by editing the relevant 13-point section.
 
-## PHASE 4.5 — Task Breakdown (only after Approval)
-Break the approved spec into a small, ordered, testable task list. The developer reviews and can adjust it before implementation starts.
-
-Create `docs/tasks/<ticket-id>.md` from the template (`templates/TASKS.md`):
-1. **Read the approved spec** point 6 (Technical Solution) and point 8 (Code Impact) — these define the work surface.
-2. Decompose the work into atomic tasks (each a single PR-sized chunk: schema migration, service method, endpoint, test, migration script).
-3. For each task record: **id, title, description, target files** (`file:line`), **dependencies** (which tasks must finish first), **Definition of Done** (checkable), and **spec points covered**.
-4. Order tasks respecting dependency graph — DB-layer first, service second, API third, UI/tests last.
-5. Flag tasks that are blocking/blocked; no task may depend on one that is out of scope (Non-Goals, point 3).
-6. Present the plan to the developer for confirmation before Phase 5. Adjustments expected; do not start coding until the developer says go.
-
-## PHASE 5 — Implementation (Phase B, only after Approval)
-- Execute tasks **one at a time, in dependency order** from the task list; do not jump ahead.
-- Complete one task's DoD before starting the next.
-- Generate code strictly within the spec's scope — respect Non-Goals (point 3).
-- Deliver: changed files with `file:line`, a summary of changes per spec point, and verification steps (commands, tests).
-- **No silent deviation.** Mark any deviation from the spec explicitly; deviations require re-approval.
-- Provide traceability: link spec → tasks → PR → deploy.
-
-## PHASE 6 — Verification
-- Run the DoD checks from point 5; run the tests from point 9; run the per-task DoD from the task list.
-- Report pass/fail per Definition of Done item. If any fail, fix or re-escalate to the approver — do not declare Done.
+## PHASE 5 — Human Approval and Handoff
+- Only a human can approve the specification. The AI never sets status to `Approved`.
+- After approval, hand off task-plan authoring and validation to `sdd-task`.
+- Implementation is handled only from a human-approved task plan.
 
 ## Spec Lifecycle & Traceability
 - `Draft → In Review → Approved → Task Breakdown → In Implementation → Deployed → Done`
@@ -105,8 +87,10 @@ Track per ticket: **time to spec**, **socratic rounds used**, **rework rate** (P
 - **Never skip the gate.** Even if the developer says "just gather requirements", check the 4 files first.
 - **Never create foundation docs without interviewing** — empty templates with placeholder text do NOT satisfy the gate.
 - **Never proceed to feature requirements while the gate is blocked.**
-- **Never implement without an approved spec.** Phase B requires approval.
-- **Never start coding without a confirmed task plan.** Get developer sign-off on the task list first.
+- Never write or modify the human-authored 13 points.
+- Never write or modify the human-authored task plan; hand off to `sdd-task`.
+- Never approve a spec or task plan on behalf of a human.
+- This skill does not implement code.
 - If a file exists but is clearly stale/conflicting with the codebase, flag it to the developer; do not silently rewrite it.
 
 ## Multi-Agent Support
@@ -114,9 +98,9 @@ This skill works across agent tools. Each tool loads SDD instructions via its ow
 
 | Tool | Entry point | Skill location |
 |------|-------------|----------------|
-| opencode | `AGENTS.md` + skill frontmatter | `.opencode/skills/sdd/SKILL.md` |
-| Claude Code | `CLAUDE.md` + skill | `.claude/skills/sdd/SKILL.md` |
-| Codex | `AGENTS.md` | skill folder (same workflow) |
-| GitHub Copilot | `.github/copilot-instructions.md` + `AGENTS.md` | skill folder (same workflow) |
+| OpenCode | `AGENTS.md` | `.opencode/skills/sdd-specify/SKILL.md` |
+| Claude Code | `CLAUDE.md` | `.claude/skills/sdd-specify/SKILL.md` |
+| Codex | `AGENTS.md` | `.agents/skills/sdd-specify/SKILL.md` |
+| GitHub Copilot | `.github/copilot-instructions.md` + `AGENTS.md` | `.agents/skills/sdd-specify/SKILL.md` |
 
 Ensure the generated `AGENTS.md` (foundation doc) always keeps its SDD rules section — that is what makes the gate machine-readable by any agent.

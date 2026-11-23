@@ -1,227 +1,121 @@
-# SDD SKILL — Specification-Driven Development Skill
+# SDD SKILL
 
-Skill untuk **AI coding agent** (opencode, Claude Code, Codex, GitHub Copilot) yang menerapkan **Specification-Driven Development (SDD)**: *tidak ada kode yang menyentuh codebase sebelum sebuah spesifikasi teknis ditulis, direview, dan disetujui.*
+Toolkit for Specification-Driven Development across AI coding agents. **People author the feature specification and task plan; AI validates them and implements only approved tasks.**
 
-## Cara Kerja (Lifecycle)
+## Alur kerja
 
-```
-Foundation Gate → Requirements → 13-Point Spec → Review → Human Approval → Task Breakdown → Implementation → Verification → Done
-```
-
-| Fase | Fungsi | Output |
-|------|--------|--------|
-| 0. Foundation Gate | Cek 4 dokumen dasar proyek (PRD, DESIGN_SYSTEM, ARCHITECTURE, AGENTS). Kalau kurang, agent wawancara kamu dulu | 4 file foundation |
-| 1. Requirements | Kumpulkan kebutuhan fitur | input contract |
-| 2. Draft Spec | Agent menulis spec 13 poin | `docs/specs/<ticket-id>.md` |
-| 3. Review | Agent jadi devil's advocate, kritik spec (max 3 ronde) | gap report |
-| 4. Approval | **Manusia yang setujui** — bukan AI | spec approved |
-| 4.5. Task Breakdown | Pecah spec jadi task kecil berurut + dependensi | `docs/tasks/<ticket-id>.md` |
-| 5. Implementation | Agent eksekusi task satu per satu sesuai urutan | PR / diff |
-| 6. Verification | Verifikasi terhadap Definition of Done (spec + per task) | hasil test |
-
-> Prinsip inti: **AI memberi saran, manusia yang memutuskan.** Agent tidak pernah menyetujui/memblokir sendiri.
-
-## Struktur Repo
-
-```
-sdd-agent/
-├── .opencode/skills/sdd/           # skill (opencode) — frontmatter + workflow SDD
-│   ├── SKILL.md
-│   └── templates/
-│       ├── PRD.md                  # template dokumen foundation
-│       ├── DESIGN_SYSTEM.md
-│       ├── ARCHITECTURE.md
-│       ├── AGENTS.md               # coding SOP + SDD rules (diisi saat gate)
-│       ├── SPEC.md                 # template spec 13 poin
-│       └── TASKS.md                # template task breakdown
-├── .claude/skills/sdd/             # skill (Claude Code) — copy dari .opencode
-├── AGENTS.md                       # entry point Codex/Copilot/opencode (rules SDD)
-├── CLAUDE.md                       # entry point Claude Code (rules SDD)
-├── .github/copilot-instructions.md # entry point GitHub Copilot (rules SDD)
-├── specs.md                        # referensi detail proses SDD (13 poin, fase A/B)
-├── install.sh                      # installer one-liner (curl dari GitHub, tanpa clone)
-└── install-foundation.sh           # installer ke repo target
+```text
+foundation-gate
+  → human authors 13-point spec with sdd-specify
+  → AI validates and reports gaps
+  → human approves spec
+  → human authors task plan
+  → sdd-task validates the plan
+  → human approves task plan
+  → AI executes approved tasks, one at a time
+  → verification against the spec and task DoD
 ```
 
-## Kompatibilitas Agent
+| Skill | Tanggung jawab |
+|---|---|
+| `foundation-gate` | Memastikan `PRD.md`, `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`, dan `AGENTS.md` memberi AI konteks proyek. |
+| `sdd-specify` | Memandu manusia menulis spec 13 poin. AI hanya memeriksa kelengkapan dan melaporkan gap; tidak menulis atau mengubah 13 poin. |
+| `sdd-task` | Manusia menulis `docs/tasks/<ticket-id>.md`; AI memvalidasi task terhadap spec yang disetujui, tanpa mengubah dokumen. |
 
-Satu workflow, tiap tool memuat lewat mekanismenya sendiri:
+AI boleh menambahkan appendix terpisah **AI Agent Advisor** pada spec jika diminta. Appendix berisi rekomendasi non-binding dan tidak mengubah isi 13 poin. Hanya manusia yang menyetujui spec dan task plan.
 
-| Tool | Entry point | Skill location |
-|------|-------------|----------------|
-| opencode | `AGENTS.md` + skill frontmatter | `.opencode/skills/sdd/SKILL.md` |
-| Claude Code | `CLAUDE.md` + skill | `.claude/skills/sdd/SKILL.md` |
-| Codex | `AGENTS.md` | `.opencode/skills/sdd/` (workflow sama) |
-| GitHub Copilot | `.github/copilot-instructions.md` + `AGENTS.md` | `.opencode/skills/sdd/` (workflow sama) |
+## Install
 
-Aturan SDD selalu dibawa di `AGENTS.md` saat dokumen foundation dibuat — itu yang membuat gate dipatuhi agent mana pun.
+### GitHub CLI — pilih platform
 
-## Cara Pakai
-
-### 1. Install skill ke repo target
-
-Tanpa clone repo (langsung dari GitHub):
+Dengan versi GitHub CLI yang menyediakan `gh skill`, pasang skills ke repository aktif:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/albaizzz/sdd-agent/main/install.sh | bash -s -- /path/to/your/repo
+gh skill install albaizzz/sdd-skill --all --agent opencode
+gh skill install albaizzz/sdd-skill --all --agent codex
+gh skill install albaizzz/sdd-skill --all --agent github-copilot
+gh skill install albaizzz/sdd-skill --all --agent claude-code
 ```
 
-Atau dari repo yang sudah di-clone:
+Jalankan perintah untuk platform yang digunakan. GitHub CLI memilih lokasi skill native platform tersebut.
+
+### Plugin native
+
+**GitHub Copilot CLI**
+
+```bash
+copilot plugin install albaizzz/sdd-skill
+```
+
+Untuk memuat plugin dari clone lokal:
+
+```bash
+copilot --plugin-dir /path/to/sdd-skill
+```
+
+**Claude Code**
+
+```bash
+claude plugin marketplace add albaizzz/sdd-skill
+claude plugin install sdd@sdd-skill
+```
+
+### Install skills dan entry-point docs ke target repository
+
+Tanpa clone:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/albaizzz/sdd-skill/main/install.sh | bash -s -- /path/to/your/repo
+```
+
+Dari clone:
 
 ```bash
 ./install-foundation.sh /path/to/your/repo
 ```
 
-Ini menyalin skill (`.opencode/skills/sdd/` + `.claude/skills/sdd/`) dan entry-point doc (AGENTS.md, CLAUDE.md, specs.md, `.github/copilot-instructions.md`) ke repo target. **Restart opencode / Claude Code** di repo target agar skill termuat.
+Installer menyalin skills ke `.agents/skills/` (Codex dan GitHub Copilot), `.opencode/skills/`, dan `.claude/skills/`, serta memasang `AGENTS.md`, `CLAUDE.md`, dan `.github/copilot-instructions.md`. Skill plugin juga tersedia dari direktori `skills/` pada repository ini. Jika file instruksi target sudah berisi aturan SDD, installer mempertahankannya; periksa dan gabungkan aturan baru bila instruksinya masih memakai alur lama.
 
-> Catatan: Jika target sudah punya `AGENTS.md`/`CLAUDE.md` tapi tanpa aturan SDD, file lama di-overwrite — cek diff `git log` setelah install. Foundation docs (PRD/DESIGN_SYSTEM/ARCHITECTURE) tidak ikut disalin — skill membuatnya via wawancara.
+## Mulai menggunakan
 
-### 1b. Install sebagai plugin GitHub Copilot CLI
+1. Jalankan `foundation-gate` untuk memeriksa dokumen konteks proyek. Jika ada yang kurang, jawab wawancara agar dokumen foundation dapat dilengkapi.
+2. Buat spec di `docs/specs/<ticket-id>.md`. Gunakan `sdd-specify` untuk menjawab pertanyaan per bagian dan memeriksa gap; tulis sendiri seluruh isi 13 poin.
+3. Minta `sdd-specify` memvalidasi spec. Perbaiki sendiri gap yang dilaporkan, lalu minta persetujuan manusia.
+4. Setelah spec disetujui, tulis task plan di `docs/tasks/<ticket-id>.md` menggunakan `TASKS.md` di folder `sdd-task/templates/` pada lokasi skill platform yang terpasang.
+5. Gunakan `sdd-task` untuk memvalidasi task plan terhadap spec. Perbaiki sendiri gap-nya dan minta persetujuan manusia.
+6. Minta AI mengerjakan task tertentu dari task plan yang sudah disetujui. AI mengerjakan berurutan dan memverifikasi DoD setiap task.
 
-```bash
-copilot plugin install albaizzz/sdd-agent
-```
-
-Plugin memuat skill `sdd` dan `foundation-gate` (lihat `.claude-plugin/` dan `skills/`). Untuk mencoba dari folder lokal tanpa install:
-
-```bash
-copilot --plugin-dir /path/to/sdd-agent
-```
-
-> Catatan: `skills/` adalah salinan dari `.claude/skills/`. Jika mengubah salah satu, ubah juga yang lain.
-
-### 2. Mulai fitur baru
-
-**opencode / Claude Code** — buka di repo target (skill sudah ter-load otomatis), lalu minta seperti ini:
-
-```
-Buat fitur: <deskripsi fitur>. 
-Affected area: <module/service/endpoint>. 
-Priority: P1.
-```
-
-**Codex / GitHub Copilot** — tanpa skill, agent membaca aturan SDD dari `AGENTS.md` (root repo). Minta dengan format yang sama; agent harus mengikuti lifecycle SDD dari file itu. Untuk Copilot (Chat/Edit/Review) rujuk juga `.github/copilot-instructions.md`.
-
-Skill akan otomatis (di tool apa pun):
-
-1. **Gate check** — cek PRD/DESIGN_SYSTEM/ARCHITECTURE/AGENTS.
-   - Kurang → ditanya dulu satu per satu (maks 3 ronde per file), baru dibuat.
-   - Lengkap → lanjut.
-2. **Draft spec** — tulis 13-poin spec ke `docs/specs/<ticket-id>.md`.
-3. **Review** — kritik spec, minta kamu menutup gap (socratic).
-4. **Tunggu approval kamu** — spec disetujui hanya setelah kamu konfirmasi.
-5. **Task breakdown** — pecah spec jadi daftar task kecil: urutan, dependensi, file target, DoD per task, dikonfirmasi kamu dulu.
-6. **Implementasi** — agent eksekusi task satu per satu sesuai urutan.
-7. **Verifikasi** — jalankan test & cek Definition of Done per task.
-
-### 3. Review spec yang sudah ada
-
-```
-Review draft spec ini dan tunjukkan gap-nya: <path>
-```
-
-### 4. Banding / tolak balik
-
-Kalau agent salah menolak/menyetujui spec, kamu bisa **appeal** dengan alasan tertulis — manusia yang override.
-
-## Panduan: Menulis Spec dengan `spec-writer`
-
-Skill `spec-writer` memandu kamu menulis spec 13 poin section demi section. Skill ini tidak menulis spec untukmu dan tidak menyetujui spec. Hasilnya adalah draft `docs/specs/<ticket-id>.md` yang siap direview oleh `sdd`.
-
-### Urutan kerja
-
-```
-spec-writer (draft) → sdd review (Socratic) → approval manusia → sdd task breakdown → implementasi
-```
-
-### Contoh: endpoint `GET /orders/:id/status`
-
-**1. Panggil skill**
+Contoh prompt:
 
 ```text
-Tulis spec: tambah endpoint GET /orders/:id/status yang mengembalikan status order.
-Ticket: ORD-142 | Type: feature | Priority: P1, deadline 30 Nov
-Area: order_service.go, routes.go
+Gunakan foundation-gate untuk memeriksa konteks proyek ini.
+
+Saya menulis spec di docs/specs/ORD-142.md. Gunakan sdd-specify untuk
+memvalidasi kelengkapan dan melaporkan gap. Jangan ubah 13 poin saya.
+
+Saya menulis task plan di docs/tasks/ORD-142.md. Gunakan sdd-task untuk
+memvalidasinya terhadap spec yang sudah disetujui. Jangan ubah task plan.
+
+Jalankan T1 dari task plan yang sudah disetujui dan verifikasi DoD-nya.
 ```
 
-**2. Skill membuat scaffold dan bertanya per section**
-
-Skill membuat `docs/specs/ORD-142.md` dengan status `Draft`, lalu bertanya section 1: masalah, pengguna terdampak, dan biayanya.
-
-**3. Jawab dengan angka**
+## Struktur repository
 
 ```text
-Customer sering menelepon CS hanya untuk menanyakan status order.
-Sekitar 800 panggilan per minggu, rata-rata 4 menit.
+skills/
+├── foundation-gate/
+├── sdd/
+├── sdd-specify/
+├── sdd-task/
+│   └── templates/TASKS.md
+└── spec-writer/ (legacy alias)
+
+AGENTS.md
+CLAUDE.md
+.github/copilot-instructions.md
+install.sh
+install-foundation.sh
+specs.md
 ```
 
-Skill menulis jawabanmu sebagai `FR-01` dan lanjut ke section 2.
-
-**4. Jawaban kabur akan ditanya ulang**
-
-```text
-Section 5 — "Endpoint harus cepat" belum bisa diuji.
-Berapa p95 yang diterima? Setelah kamu beri angka, skill menulisnya sebagai NFR-01.
-```
-
-**5. Selesai**
-
-Skill menandai placeholder yang belum terisi sebagai `TBD` dengan owner, lalu mengisi Open Questions dan Assumptions. Setelah itu jalankan review:
-
-```text
-Review draft spec ini: docs/specs/ORD-142.md
-```
-
-### Aturan yang perlu diingat
-- Ticket ID diberikan oleh kamu. Skill tidak membuatnya.
-- Setiap `FR` harus punya minimal satu `AC`. Setiap `AC` harus punya tes di section 9.
-- Kata seperti "cepat", "aman", dan "fleksibel" tanpa angka akan ditandai.
-- Maksimal 2 pertanyaan lanjutan per section. Setelah itu skill menandai `assumed — verify`.
-- Status tetap `Draft` sampai human approver menyetujui.
-
-### Lokasi skill
-- `.opencode/skills/spec-writer/` (opencode)
-- `.claude/skills/spec-writer/` (Claude Code)
-
-Template ada di `templates/SPEC.md` di masing-masing folder.
-
-## 13 Poin Spec
-
-1. Business Requirement — kenapa fitur ini dibuat
-2. Goals — metrik sukses
-3. Out of Scope — batasan non-goals
-4. Constraints — limitasi sistem/waktu/sumber daya
-5. Definition of Done — kriteria selesai yang terukur (pass/fail)
-6. Technical Solution — arsitektur, API contract, dependency baru
-6a. Security & Compliance — authz/authn, PII, secrets
-6b. Decision Record — alternatif yang ditolak & alasannya
-7. Database Impact — skema, index, migration, downtime
-8. Code Impact — file yang berubah, dengan `file:line`, blast radius
-9. Testing & Regression — strategi agar fitur lama tidak rusak
-10. Backward Compatibility & Rollback — trigger rollback, siapa memutuskan
-11. Deployment & Migration — toggles, canary, observability
-
-## Format Input yang Direkomendasikan
-
-```
-Feature description: <apa & kenapa dibangun>
-Affected area (opsional): <modul/service/endpoint yang diduga terlibat>
-Priority: <P0/P1/P2> + deadline
-Existing draft spec (opsional): <path draft yang mau dikritik>
-```
-
-Jika deskripsi terlalu samar, agent akan bertanya maksimal **3 pertanyaan**, lalu lanjut dengan asumsi yang ditandai `assumed — verify`.
-
-## Lokasi Artefak
-
-- Spec: `docs/specs/<ticket-id>.md` (version-controlled, status ada di header file)
-- Task list: `docs/tasks/<ticket-id>.md` (urutan eksekusi, dependensi, DoD per task)
-- Lifecycle spec: `Draft → In Review → Approved → Task Breakdown → In Implementation → Deployed → Done`
-- Deliverable fitur: spec + task list + PR (link ke ticket & spec) + hasil verifikasi
-
-## Tips
-
-- Beri info `file:line` di deskripsi fitur → agent lebih cepat & akurat.
-- Setuju/ditolak spec **selalu dengan konfirmasi eksplisitmu** — jangan biarkan agent self-approve.
-- File foundation yang sudah usang/konflik dengan codebase → flag ke developer, jangan diam-diam ditulis ulang.
-- Track per ticket: time-to-spec, socratic rounds, rework rate, defect leak — untuk mengukur efektivitas SDD.
+`skills/` adalah sumber skill untuk plugin dan instalasi lintas platform. `AGENTS.md` menjadi entry point untuk Codex, OpenCode, dan GitHub Copilot; Claude Code menggunakan `CLAUDE.md`.

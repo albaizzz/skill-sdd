@@ -51,6 +51,13 @@ How existing features stay unbroken. Contract tests, smoke/manual regression che
 Feature toggles, release sequence, canary/ramp percentages, data seeding.
 Observability signals (logs, metrics) that validate a healthy deployment.
 
+## AI Agent Advisor
+> AI-authored recommendations only. This appendix must not alter or replace any human-authored requirement above.
+
+- Recommendations:
+- Rationale / risk:
+- Human decision: `Not yet reviewed`
+
 ---
 ## Review Record
 | Point | Grade (Pass/Fail/Insufficient) | Notes |
